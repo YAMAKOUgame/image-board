@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3001");
+const socket = io("https://image-board-nvzh.onrender.com");
 
 function App() {
   const [fieldCards, setFieldCards] = useState({});
@@ -44,7 +44,7 @@ const handleImageSelect = async (slotId,event)=>{
 
 
   const res = await fetch(
-    "http://localhost:3001/upload",
+  "https://image-board-nvzh.onrender.com/upload",
     {
       method:"POST",
       body:formData
@@ -56,7 +56,7 @@ const handleImageSelect = async (slotId,event)=>{
 
 
   const imageUrl =
-    "http://localhost:3001" + data.url;
+    "image-board-nvzh.onrender.com" + data.url;
 
 
   if(slotId.startsWith("field")){
