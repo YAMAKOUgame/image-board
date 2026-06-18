@@ -101,27 +101,37 @@ io.on("connection",(socket)=>{
     fieldCards
   );
   socket.on(
-    "updateField",
-    data=>{
-      // ★ここを変更
-      fieldCards = {
-        ...data
-      };
+  "updateField",
+  data=>{
+
+    fieldCards = {
+      ...data
+    };
 
 
-      fs.writeFileSync(
-        saveFile,
-        JSON.stringify(fieldCards)
-      );
-      // 全員へ最新状態
-      io.emit(
-        "sync",
-        fieldCards
-      );
-    }
-  );
+    fs.writeFileSync(
+      saveFile,
+      JSON.stringify(fieldCards)
+    );
+
+
+    socket.broadcast.emit(
+      "sync",
+      fieldCards
+    );
+
+
+    socket.emit(
+      "sync",
+      fieldCards
+    );
+
+  }
+);
 
 });
+
+
 const PORT =
 process.env.PORT || 3001;
 server.listen(

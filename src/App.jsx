@@ -19,10 +19,7 @@ function App() {
 
 
   socket.on("sync", (data) => {
-  setFieldCards(prev => ({
-    ...prev,
-    ...data
-  }));
+  setFieldCards(data);
 });
 
 
@@ -157,23 +154,25 @@ else{
 
   if(slotId.startsWith("field")){
 
+  setFieldCards(prev=>{
 
-  const next = {
-    ...fieldCards,
-    [target]: image
-  };
+    const next = {
+      ...prev,
+      [target]:image
+    };
 
-
-  delete next[slotId];
-
-
-  setFieldCards(next);
+    delete next[slotId];
 
 
-  socket.emit(
-    "updateField",
-    next
-  );
+    socket.emit(
+      "updateField",
+      next
+    );
+
+    return next;
+
+  });
+
   }else{
 
     setMyCards(prev=>{
