@@ -62,20 +62,24 @@ const handleImageSelect = async (slotId,event)=>{
   const imageUrl = data.url;
     console.log(imageUrl);
   if(slotId.startsWith("field")){
-    setFieldCards(prev=>{
-  const next = {
-    ...prev,
-    [slotId]: imageUrl
-  };
-  setTimeout(()=>{
-  socket.emit(
-    "updateField",
-    next
-  );
-},100);
-  return next;
 
-});
+  setFieldCards(prev => {
+
+    const next = {
+      ...prev,
+      [slotId]: imageUrl
+    };
+
+    console.log("送信する", next);
+
+    socket.emit(
+      "updateField",
+      next
+    );
+
+    return next;
+
+  });
   }else{
     setMyCards(prev=>({
       ...prev,
