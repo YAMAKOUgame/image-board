@@ -384,13 +384,6 @@ const drawCard = () => {
 
   }
 
-if(sourceIsField || targetIsField){
-  socket.emit(
-    "updateField",
-    fieldCards
-  );
-}
-
   setDraggedSlot(null);
 
 };
