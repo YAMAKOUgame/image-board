@@ -55,8 +55,7 @@ const handleImageSelect = async (slotId,event)=>{
   const data = await res.json();
 
 
-  const imageUrl =
-    "image-board-nvzh.onrender.com" + data.url;
+  const imageUrl = data.url;
 
     console.log(imageUrl);
 
