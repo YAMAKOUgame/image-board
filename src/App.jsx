@@ -70,12 +70,12 @@ const handleImageSelect = async (slotId,event)=>{
       [slotId]: imageUrl
     };
 
-    console.log("送信する", next);
+    console.log("emit送信", next);
 
-    socket.emit(
-      "updateField",
-      next
-    );
+socket.emit(
+  "updateField",
+  next
+);
 
     return next;
 
