@@ -21,7 +21,9 @@ app.use(
   )
 );
 
+
 const storage = multer.diskStorage({
+
   destination:(req,file,cb)=>{
     cb(null,path.join(__dirname,"uploads"));
   },
@@ -32,11 +34,15 @@ const storage = multer.diskStorage({
       Date.now()+"-"+file.originalname
     );
   }
+
 });
+
 
 const upload = multer({storage});
 
+
 const server = http.createServer(app);
+
 
 const io = new Server(server,{
   cors:{
@@ -53,78 +59,76 @@ const saveFile = path.join(
 
 let fieldCards = {};
 
+
 if(fs.existsSync(saveFile)){
+
   fieldCards = JSON.parse(
-    fs.readFileSync(saveFile,"utf8")
+    fs.readFileSync(
+      saveFile,
+      "utf8"
+    )
   );
+
 }
-
-
 app.post(
   "/upload",
   upload.single("image"),
   (req,res)=>{
-
     if(!req.file){
       return res.status(400).json({
         error:"画像なし"
       });
     }
-
-    console.log("画像受信");
-
     const image =
-  fs.readFileSync(req.file.path)
-    .toString("base64");
+      fs.readFileSync(req.file.path)
+      .toString("base64");
+    res.json({
 
-res.json({
-  url:"data:" + req.file.mimetype + ";base64," + image
-});
-
+      url:
+      "data:"+
+      req.file.mimetype+
+      ";base64,"+
+      image
+    });
   }
 );
 
-
-
 io.on("connection",(socket)=>{
-
   console.log("接続しました");
-
-
+  // 接続した人へ現在状態送信
   socket.emit(
     "sync",
     fieldCards
   );
-
-
   socket.on(
     "updateField",
     data=>{
-
-      fieldCards=data;
+      // ★ここを変更
+      fieldCards = {
+        ...data
+      };
 
 
       fs.writeFileSync(
         saveFile,
         JSON.stringify(fieldCards)
       );
-
-
+      // 全員へ最新状態
       io.emit(
         "sync",
         fieldCards
       );
-
     }
   );
 
 });
-
-
-const PORT = process.env.PORT || 3001;
-
-server.listen(PORT, () => {
-  console.log(
-    "server running :" + PORT
-  );
-});
+const PORT =
+process.env.PORT || 3001;
+server.listen(
+  PORT,
+  ()=>{
+    console.log(
+      "server running :" + PORT
+    );
+  }
+);
