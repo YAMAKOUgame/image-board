@@ -8,7 +8,9 @@ function App() {
   const [myCards, setMyCards] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const [draggedSlot, setDraggedSlot] = useState(null);
-
+  const [handOpen, setHandOpen] = useState(true);
+  const [stockOpen, setStockOpen] = useState(true);
+  const [trashOpen, setTrashOpen] = useState(true);
   useEffect(() => {
 
   socket.on("connect", () => {
@@ -102,14 +104,160 @@ const handleImageSelect = async (slotId,event)=>{
 );
         return next;
       });
-    } else {
-      setMyCards(prev => {
-        const next = { ...prev };
-        delete next[slotId];
-        return next;
-      });
-    }
+    } else if(slotId.startsWith("trash")){
+
+  setMyCards(prev=>{
+
+    const next = {...prev};
+
+    delete next[slotId];
+
+    return next;
+
+  });
+
+
+  setFieldCards(prev=>{
+
+    const next = {...prev};
+
+    delete next[slotId];
+
+    return next;
+
+  });
+
+}
+else{
+
+  setMyCards(prev=>{
+
+    const next = {...prev};
+
+    delete next[slotId];
+
+    return next;
+
+  });
+
+}
   };
+
+  const moveToTrash = slotId => {
+
+  const image =
+    fieldCards[slotId] || myCards[slotId];
+
+
+  if(!image) return;
+
+
+  const target =
+    Array.from({length:20})
+    .map((_,i)=>`trash${i}`)
+    .find(slot =>
+      !fieldCards[slot] &&
+      !myCards[slot]
+    );
+
+
+  if(!target) return;
+
+
+  if(slotId.startsWith("field")){
+
+    setFieldCards(prev=>{
+
+      const next = {
+        ...prev,
+        [target]:image
+      };
+
+      delete next[slotId];
+
+
+      socket.emit(
+        "updateField",
+        next
+      );
+
+      return next;
+
+    });
+
+
+  }else{
+
+    setMyCards(prev=>{
+
+      const next = {
+        ...prev,
+        [target]:image
+      };
+
+      delete next[slotId];
+
+      return next;
+
+    });
+
+  }
+
+};
+
+const drawCard = () => {
+
+  const stockSlots =
+    Object.keys(myCards)
+      .filter(key => key.startsWith("stock"))
+      .filter(key => myCards[key]);
+
+
+  if(stockSlots.length === 0){
+    return;
+  }
+
+
+  const randomSlot =
+    stockSlots[
+      Math.floor(Math.random() * stockSlots.length)
+    ];
+
+
+  const image =
+    myCards[randomSlot];
+
+
+  const handSlots =
+    Array.from({length:10})
+    .map((_,i)=>`hand${i}`)
+    .filter(slot => !myCards[slot]);
+
+
+  if(handSlots.length === 0){
+    return;
+  }
+
+
+  const target =
+    handSlots[0];
+
+
+  setMyCards(prev=>{
+
+    const next = {
+      ...prev,
+      [target]: image
+    };
+
+    delete next[randomSlot];
+
+
+    return next;
+
+  });
+
+};
 
   const handleDrop = targetSlot => {
 
@@ -292,21 +440,44 @@ if(sourceIsField || targetIsField){
                 }}
               />
 
-              <button
-                onClick={e => {
-                  e.stopPropagation();
-                  deleteCard(slotId);
-                }}
-                style={{
-                  position:"absolute",
-                  left:"4px",
-                  bottom:"4px",
-                  fontSize:"12px",
-                  padding:"3px 8px"
-                }}
-              >
-                削除
-              </button>
+              <div style={{
+  position:"absolute",
+  left:"4px",
+  bottom:"4px",
+  display:"flex",
+  gap:"4px"
+}}>
+
+<button
+  onClick={e => {
+    e.stopPropagation();
+    deleteCard(slotId);
+  }}
+  style={{
+    fontSize:"9px",
+    padding:"1px 5px"
+  }}
+>
+  削除
+</button>
+
+
+<button
+  onClick={e => {
+    e.stopPropagation();
+
+    moveToTrash(slotId);
+
+  }}
+  style={{
+    fontSize:"12px",
+    padding:"3px 8px"
+  }}
+>
+  トラッシュ
+</button>
+
+</div>
             </div>
           ) : (
             <label
@@ -410,17 +581,28 @@ if(sourceIsField || targetIsField){
 )}
           </div>
 
-          {[4,5].map(i =>
-  <div
-    key={i}
-    style={{
-      width:"30%",
-      margin:"20px auto"
-    }}
-  >
+          <div style={{
+  display:"flex",
+  flexDirection:"column",
+  alignItems:"center",
+  gap:"20px",
+  margin:"20px auto"
+}}>
+
+{/* 上段 4 + 追加右 */}
+<div style={{
+  display:"flex",
+  alignItems:"center",
+  justifyContent:"center",
+  gap:"12px",
+  width:"65%"
+}}>
+
+  {/* 4 */}
+  <div style={{width:"100%"}}>
 
     <div style={cardStyle}>
-      {renderCard(`field${i}`)}
+      {renderCard("field4")}
     </div>
 
     <div style={{
@@ -430,29 +612,17 @@ if(sourceIsField || targetIsField){
       marginTop:"6px"
     }}>
 
-      <div style={{
-        display:"flex",
-        justifyContent:"space-between",
-        alignItems:"center"
-      }}>
+      <div style={{display:"flex",justifyContent:"space-between"}}>
         <span>エネ</span>
         <input style={{width:"60px"}} />
       </div>
 
-      <div style={{
-        display:"flex",
-        justifyContent:"space-between",
-        alignItems:"center"
-      }}>
+      <div style={{display:"flex",justifyContent:"space-between"}}>
         <span>HP</span>
         <input style={{width:"60px"}} />
       </div>
 
-      <div style={{
-        display:"flex",
-        justifyContent:"space-between",
-        alignItems:"center"
-      }}>
+      <div style={{display:"flex",justifyContent:"space-between"}}>
         <span>状態</span>
         <input style={{width:"60px"}} />
       </div>
@@ -460,7 +630,76 @@ if(sourceIsField || targetIsField){
     </div>
 
   </div>
-)}
+
+
+  {/* 追加枠 */}
+  <div style={{
+    ...cardStyle,
+    width:"50%"
+  }}>
+    {renderCard("field9")}
+  </div>
+
+</div>
+
+
+
+{/* 下段 追加左 + 5 */}
+<div style={{
+  display:"flex",
+  alignItems:"center",
+  justifyContent:"center",
+  gap:"12px",
+  width:"65%"
+}}>
+
+
+  {/* 追加枠 */}
+  <div style={{
+    ...cardStyle,
+    width:"50%"
+  }}>
+    {renderCard("field10")}
+  </div>
+
+
+  {/* 5 */}
+  <div style={{width:"100%"}}>
+
+    <div style={cardStyle}>
+      {renderCard("field5")}
+    </div>
+
+
+    <div style={{
+      display:"flex",
+      flexDirection:"column",
+      gap:"4px",
+      marginTop:"6px"
+    }}>
+
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+        <span>エネ</span>
+        <input style={{width:"60px"}} />
+      </div>
+
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+        <span>HP</span>
+        <input style={{width:"60px"}} />
+      </div>
+
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+        <span>状態</span>
+        <input style={{width:"60px"}} />
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</div>
 
           <div style={{
             display:"grid",
@@ -529,19 +768,31 @@ if(sourceIsField || targetIsField){
           <h2>手札/山札</h2>
           <h3>手札</h3>
 
-          <div style={{
-            display:"grid",
-            gridTemplateColumns:"repeat(5,1fr)",
-            gap:"12px"
-          }}>
+{handOpen && (
+<div style={{
+  display:"grid",
+  gridTemplateColumns:"repeat(5,1fr)",
+  gap:"12px"
+}}>
             {Array.from({length:10}).map((_,i) =>
               <div key={i} style={cardStyle}>
                 {renderCard(`hand${i}`)}
               </div>
             )}
           </div>
+)}
+          <h3
+ onClick={() => setStockOpen(!stockOpen)}
+ style={{cursor:"pointer"}}
+>
+ 山札 {stockOpen ? "▲" : "▼"}
+</h3>
 
-          <h3>山札</h3>
+<button onClick={drawCard}>
+ 山札を引く
+</button>
+
+{stockOpen && (
 
           <div style={{
             display:"grid",
@@ -554,6 +805,27 @@ if(sourceIsField || targetIsField){
               </div>
             )}
           </div>
+          )}
+          <h3
+  onClick={() => setTrashOpen(!trashOpen)}
+  style={{cursor:"pointer"}}
+>
+  トラッシュ {trashOpen ? "▲" : "▼"}
+</h3>
+
+{trashOpen && (
+  <div style={{
+    display:"grid",
+    gridTemplateColumns:"repeat(5,1fr)",
+    gap:"12px"
+  }}>
+    {Array.from({length:20}).map((_,i)=>
+      <div key={i} style={cardStyle}>
+        {renderCard(`trash${i}`)}
+      </div>
+    )}
+  </div>
+)}
         </div>
       </div>
 
