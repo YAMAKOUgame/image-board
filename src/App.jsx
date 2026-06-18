@@ -19,7 +19,9 @@ function App() {
 
 
   socket.on("sync", (data) => {
+  console.log("sync受信", data);
   setFieldCards(data);
+
 });
 
 

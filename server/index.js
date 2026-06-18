@@ -94,46 +94,54 @@ app.post(
 );
 
 io.on("connection",(socket)=>{
+
   console.log("接続しました");
-  // 接続した人へ現在状態送信
+
+
+  // 接続した人に現在の状態を送る
   socket.emit(
     "sync",
     fieldCards
   );
+
+
   socket.on(
-  "updateField",
-  data=>{
-    console.log("受信:", data);
-    fieldCards = {
-      ...data
-    };
+    "updateField",
+    data=>{
+
+      console.log("更新受信");
 
 
-    fs.writeFileSync(
-      saveFile,
-      JSON.stringify(fieldCards)
-    );
+      fieldCards = {
+        ...data
+      };
 
 
-    socket.broadcast.emit(
-      "sync",
-      fieldCards
-    );
+      fs.writeFileSync(
+        saveFile,
+        JSON.stringify(fieldCards)
+      );
 
 
-    socket.emit(
-      "sync",
-      fieldCards
-    );
+      // 全員に同じ最新状態を送る
+      io.emit(
+        "sync",
+        fieldCards
+      );
 
-  }
-);
+
+    }
+  );
+
 
 });
 
 
+
 const PORT =
 process.env.PORT || 3001;
+
+
 server.listen(
   PORT,
   ()=>{
