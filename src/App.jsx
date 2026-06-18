@@ -20,8 +20,9 @@ function App() {
 
   socket.on("sync", (data) => {
   console.log("sync受信", data);
-  setFieldCards(data);
-
+  setFieldCards({
+    ...data
+  });
 });
 
 
@@ -54,28 +55,22 @@ const handleImageSelect = async (slotId,event)=>{
       body:formData
     }
   );
-
-
   const data = await res.json();
-
-
   const imageUrl = data.url;
-
     console.log(imageUrl);
-
   if(slotId.startsWith("field")){
+    setFieldCards(prev=>{
+  const next = {
+    ...prev,
+    [slotId]: imageUrl
+  };
+  socket.emit(
+    "updateField",
+    next
+  );
+  return next;
 
-    const next = {
-  ...fieldCards,
-  [slotId]:imageUrl
-};
-
-setFieldCards(next);
-
-socket.emit(
-  "updateField",
-  next
-);
+});
   }else{
     setMyCards(prev=>({
       ...prev,
