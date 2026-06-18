@@ -58,6 +58,7 @@ const handleImageSelect = async (slotId,event)=>{
   const imageUrl =
     "image-board-nvzh.onrender.com" + data.url;
 
+    console.log(imageUrl);
 
   if(slotId.startsWith("field")){
 

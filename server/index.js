@@ -73,10 +73,13 @@ app.post(
 
     console.log("画像受信");
 
-    res.json({
-      url:
-      "/uploads/" + req.file.filename
-    });
+    const image =
+  fs.readFileSync(req.file.path)
+    .toString("base64");
+
+res.json({
+  url:"data:" + req.file.mimetype + ";base64," + image
+});
 
   }
 );
