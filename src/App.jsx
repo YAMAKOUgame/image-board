@@ -19,8 +19,11 @@ function App() {
 
 
   socket.on("sync", (data) => {
-    setFieldCards(data);
-  });
+  setFieldCards(prev => ({
+    ...prev,
+    ...data
+  }));
+});
 
 
   return () => {
@@ -63,36 +66,24 @@ const handleImageSelect = async (slotId,event)=>{
 
   if(slotId.startsWith("field")){
 
-    setFieldCards(prev=>{
+    const next = {
+  ...fieldCards,
+  [slotId]:imageUrl
+};
 
-      const next={
-        ...prev,
-        [slotId]:imageUrl
-      };
+setFieldCards(next);
 
-
-      socket.emit(
-        "updateField",
-        next
-      );
-
-
-      return next;
-
-    });
-
+socket.emit(
+  "updateField",
+  next
+);
   }else{
-
     setMyCards(prev=>({
       ...prev,
       [slotId]:imageUrl
     }));
-
   }
-
 };
-
-
   const deleteCard = slotId => {
     if (slotId.startsWith("field")) {
       setFieldCards(prev => {
@@ -166,26 +157,23 @@ else{
 
   if(slotId.startsWith("field")){
 
-    setFieldCards(prev=>{
 
-      const next = {
-        ...prev,
-        [target]:image
-      };
-
-      delete next[slotId];
+  const next = {
+    ...fieldCards,
+    [target]: image
+  };
 
 
-      socket.emit(
-        "updateField",
-        next
-      );
-
-      return next;
-
-    });
+  delete next[slotId];
 
 
+  setFieldCards(next);
+
+
+  socket.emit(
+    "updateField",
+    next
+  );
   }else{
 
     setMyCards(prev=>{
@@ -334,36 +322,32 @@ const drawCard = () => {
   else if(!sourceIsField && targetIsField){
 
 
-    setMyCards(prev => {
+  setMyCards(prev => {
 
-      const next = {...prev};
+    const next = {...prev};
 
-      delete next[draggedSlot];
+    delete next[draggedSlot];
 
-      return next;
+    return next;
 
-    });
-
-
-    setFieldCards(prev => {
-
-      const next = {
-        ...prev,
-        [targetSlot]: sourceImage
-      };
+  });
 
 
-      socket.emit(
-        "updateField",
-        next
-      );
+  const nextField = {
+    ...fieldCards,
+    [targetSlot]: sourceImage
+  };
 
 
-      return next;
+  setFieldCards(nextField);
 
-    });
 
-  }
+  socket.emit(
+    "updateField",
+    nextField
+  );
+
+}
 
 
   // 右 → 右
