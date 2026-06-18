@@ -19,10 +19,13 @@ function App() {
 
 
   socket.on("sync", (data) => {
+
   console.log("sync受信", data);
-  setFieldCards({
+
+  setFieldCards(prev => ({
+    ...prev,
     ...data
-  });
+  }));
 });
 
 
@@ -64,10 +67,12 @@ const handleImageSelect = async (slotId,event)=>{
     ...prev,
     [slotId]: imageUrl
   };
+  setTimeout(()=>{
   socket.emit(
     "updateField",
     next
   );
+},100);
   return next;
 
 });
