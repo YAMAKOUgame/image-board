@@ -103,7 +103,7 @@ io.on("connection",(socket)=>{
   socket.on(
   "updateField",
   data=>{
-
+    console.log("受信:", data);
     fieldCards = {
       ...data
     };

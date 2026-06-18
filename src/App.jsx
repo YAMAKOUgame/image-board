@@ -332,19 +332,23 @@ const drawCard = () => {
   });
 
 
-  const nextField = {
-    ...fieldCards,
-    [targetSlot]: sourceImage
-  };
+  setFieldCards(prev=>{
+
+    const nextField = {
+      ...prev,
+      [targetSlot]: sourceImage
+    };
 
 
-  setFieldCards(nextField);
+    socket.emit(
+      "updateField",
+      nextField
+    );
 
 
-  socket.emit(
-    "updateField",
-    nextField
-  );
+    return nextField;
+
+  });
 
 }
 
